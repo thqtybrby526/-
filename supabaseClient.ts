@@ -1,0 +1,13 @@
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = 
+  (typeof window !== "undefined" && (import.meta as any).env ? ((import.meta as any).env.VITE_SUPABASE_URL as string) : "") ||
+  (typeof process !== "undefined" && process?.env ? (process.env.SUPABASE_URL as string) : "") ||
+  "https://wufymhbyxwheihtxadnb.supabase.co";
+
+const supabaseKey = 
+  (typeof window !== "undefined" && (import.meta as any).env ? ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) : "") ||
+  (typeof process !== "undefined" && process?.env ? (process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY as string) : "") ||
+  "";
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
