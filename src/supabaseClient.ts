@@ -1,15 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// قراءة المتغيرات بالطريقة الرسمية لـ Vite
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// ضع رابط مشروعك الحقيقي مباشرة بين علامتي التنصيص
+const supabaseUrl = "https://wufymhbyxwheihtxadnb.supabase.co"; 
 
-// التأكد من وجود المتغيرات حتى لا تظهر شاشة بيضاء
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('⚠️ خطأ: متغيرات Supabase غير موجودة في إعدادات البيئة!');
-}
+// ضع المفتاح الطويل (Anon Key) الحقيقي مباشرة بين علامتي التنصيص
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1ZnltaGJ5eHdoZWlodHhhZG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NTA2NDksImV4cCI6MjA5NzAyNjY0OX0.15VZe17WklPQ1_aAoxk8yWOJUvlHt4dTdx5P7vALgHg"; 
 
-export const supabase = createClient(
-  supabaseUrl || '', 
-  supabaseAnonKey || ''
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
