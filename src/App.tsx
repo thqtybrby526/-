@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient";
 import {
   ResponsiveContainer,
   BarChart,
@@ -212,18 +213,14 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Increment the simulated student count randomly between 3 and 7 seconds in real-time
+  // Initialize simulated student count on load; no active background timers to satisfy real-time-only requests.
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSimulatedStudentsCount(prev => {
-        const next = prev + Math.floor(Math.random() * 2) + 1;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("academy_simulated_count_v1", String(next));
-        }
-        return next;
-      });
-    }, Math.floor(Math.random() * 4000) + 3000);
-    return () => clearInterval(interval);
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("academy_simulated_count_v1");
+      if (!stored) {
+        localStorage.setItem("academy_simulated_count_v1", "4872");
+      }
+    }
   }, []);
 
   // Fetch registered list, callbacks, and complaints actively every 6 seconds 
@@ -292,8 +289,26 @@ export default function App() {
 
   useEffect(() => {
     fetchAdminData();
-    const interval = setInterval(fetchAdminData, 6000);
-    return () => clearInterval(interval);
+
+    // Subscribe to real-time changes on the "students" table to refresh data instantly without continuous polling
+    const channel = supabase
+      .channel("student-updates-channel")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "students",
+        },
+        () => {
+          fetchAdminData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleSelectDepartmentForBooking = (dept: Department) => {

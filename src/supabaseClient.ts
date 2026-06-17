@@ -1,15 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
 
-// Ensure environment variables are loaded
-dotenv.config();
+const supabaseUrl = 
+  (typeof window !== "undefined" && (import.meta as any).env ? ((import.meta as any).env.VITE_SUPABASE_URL as string) : "") ||
+  (typeof process !== "undefined" && process?.env ? (process.env.SUPABASE_URL as string) : "") ||
+  "https://wufymhbyxwheihtxadnb.supabase.co";
 
-const supabaseUrl = process.env.SUPABASE_URL || "https://wufymhbyxwheihtxadnb.supabase.co";
-// Support both standard SUPABASE_KEY and SUPABASE_SERVICE_ROLE_KEY
-const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-if (!supabaseKey) {
-  console.warn("⚠️ Warning: SUPABASE_KEY environment variable is not defined. Please add it to your environment variables inside the Secrets panel.");
-}
+const supabaseKey = 
+  (typeof window !== "undefined" && (import.meta as any).env ? ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) : "") ||
+  (typeof process !== "undefined" && process?.env ? (process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY as string) : "") ||
+  "";
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
