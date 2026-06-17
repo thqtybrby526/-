@@ -1,13 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 
-  (typeof window !== "undefined" && (import.meta as any).env ? ((import.meta as any).env.VITE_SUPABASE_URL as string) : "") ||
-  (typeof process !== "undefined" && process?.env ? (process.env.SUPABASE_URL as string) : "") ||
-  "https://wufymhbyxwheihtxadnb.supabase.co";
+// قراءة المتغيرات بالطريقة الرسمية لـ Vite
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabaseKey = 
-  (typeof window !== "undefined" && (import.meta as any).env ? ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) : "") ||
-  (typeof process !== "undefined" && process?.env ? (process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY as string) : "") ||
-  "";
+// التأكد من وجود المتغيرات حتى لا تظهر شاشة بيضاء
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('⚠️ خطأ: متغيرات Supabase غير موجودة في إعدادات البيئة!');
+}
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(
+  supabaseUrl || '', 
+  supabaseAnonKey || ''
+);
