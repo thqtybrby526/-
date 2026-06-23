@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { X, FileText, User, Phone, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
-import { ACADEMY_DEPARTMENTS } from "../data";
-// 1. استيراد عميل Supabase الخاص بك (عدل المسار حسب مكان الملف عندك في المشروع)
-import { supabase } from "../supabaseClient"; 
+import React, { useState } from "react";
+import { supabase } from "../supabaseClient";
 
 interface PDFDownloadModalProps {
   isOpen: boolean;
@@ -10,266 +7,116 @@ interface PDFDownloadModalProps {
   defaultSpecialization?: string;
 }
 
-export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDFDownloadModalProps) {
+export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization = "الدليل الرسمي الشامل 2026" }: PDFDownloadModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [specialization, setSpecialization] = useState(defaultSpecialization || "الدليل الرسمي الشامل 2026");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [pdfLibraryList, setPdfLibraryList] = useState<any[]>([]);
-
-  const loadFilesList = () => {
-    const saved = localStorage.getItem("custom_pdf_library_v1");
-    if (saved) {
-      try {
-        setPdfLibraryList(JSON.parse(saved));
-      } catch (err) {
-        setPdfLibraryList([]);
-      }
-    } else {
-      const defaultFiles = [
-        { id: "file_comp_1", name: "الدليل الشامل والمصروفات لجميع الأقسام 2026", url: "https://raw.githubusercontent.com/alroubymediabuyer/academy-files/main/official-booklet-2026.pdf", specialization: "الدليل الرسمي الشامل 2026" },
-        { id: "file_prog_1", name: "منهج وحقيبة قسم البرمجة والذكاء الاصطناعي", url: "https://raw.githubusercontent.com/alroubymediabuyer/academy-files/main/programming-2026-guide.pdf", specialization: "قسم البرمجة والذكاء الاصطناعي" },
-        { id: "file_nurs_1", name: "منهج وحقيبة قسم مساعد خدمات صحية (تمريض)", url: "https://raw.githubusercontent.com/alroubymediabuyer/academy-files/main/nursing-assistant-2026-guide.pdf", specialization: "قسم مساعد خدمات صحية (تمريض)" },
-        { id: "file_petr_1", name: "منهج وحقيبة قسم البترول والطاقة", url: "https://raw.githubusercontent.com/alroubymediabuyer/academy-files/main/petroleum-2026-guide.pdf", specialization: "قسم البترول" }
-      ];
-      localStorage.setItem("custom_pdf_library_v1", JSON.stringify(defaultFiles));
-      setPdfLibraryList(defaultFiles);
-    }
-  };
-
-  useEffect(() => {
-    loadFilesList();
-    window.addEventListener("pdf_library_updated", loadFilesList);
-    return () => {
-      window.removeEventListener("pdf_library_updated", loadFilesList);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (defaultSpecialization) {
-      setSpecialization(defaultSpecialization);
-    } else if (pdfLibraryList.length > 0) {
-      const foundMatch = pdfLibraryList.some(f => f.specialization === defaultSpecialization);
-      if (!foundMatch && pdfLibraryList[0]) {
-        setSpecialization(pdfLibraryList[0].specialization);
-      }
-    }
-  }, [defaultSpecialization, pdfLibraryList]);
 
   if (!isOpen) return null;
 
-  const activeFileItem = pdfLibraryList.find(f => f.specialization === specialization) || pdfLibraryList[0];
-  const currentDownloadUrl = activeFileItem ? activeFileItem.url : "https://raw.githubusercontent.com/alroubymediabuyer/academy-files/main/official-booklet-2026.pdf";
-
-  const isPhoneValid = (num: string) => {
-    const cleanNum = num.trim().replace(/[\s\-\(\)]/g, "");
-    const regex = /^(010|011|012|015)[0-9]{8}$/;
-    return regex.test(cleanNum);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    const nameTrim = name.trim();
-    if (!nameTrim) {
-      setError("الرجاء إدخال الاسم بالكامل لإتمام التحقق.");
-      return;
-    }
-
-    const words = nameTrim.split(/\s+/).filter(Boolean);
-    if (words.length < 3) {
-      setError("يرجى كتابة الاسم ثلاثياً أو رباعياً على الأقل لتسجيل طلب التحميل.");
-      return;
-    }
-
-    if (!isPhoneValid(phone)) {
-      setError("الرجاء إدخال رقم هاتف مصري صحيح مكون من 11 رقماً ويبدأ بـ 010 أو 011 أو 012 أو 015.");
+    if (!name || !phone) {
+      alert("برجاء ملء جميع الحقول المطلوبة");
       return;
     }
 
     setLoading(true);
+
     try {
-      // 2. تعديل الاتصال وحفظ البيانات مباشرة في Supabase بدلاً من الـ fetch القديم
-      const { data, error: supabaseError } = await supabase
-        .from("pdf_leads") // تأكد أن لديك جدول بهذا الاسم في Supabase يحتوي على الأعمدة (name, phone, specialization)
+      // إرسال البيانات مباشرة لجدول الطلاب في Supabase
+      const { error } = await supabase
+        .from("students")
         .insert([
           {
-            name: nameTrim,
-            phone: phone.trim(),
-            specialization: specialization,
-            created_at: new Date().toISOString()
+            name: name,
+            phone: phone,
+            specialization: defaultSpecialization,
           }
         ]);
 
-      if (supabaseError) {
-        throw supabaseError;
-      }
+      if (error) throw error;
 
-      // إبقاء المنظومة المحلية والـ Ticker تعملان بنجاح بدون مشاكل
-      const directLeads = JSON.parse(localStorage.getItem("academy_direct_leads") || "[]");
-      directLeads.unshift({
-        studentName: nameTrim,
-        governorate: "تحميل الملف الوصفي PDF",
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem("academy_direct_leads", JSON.stringify(directLeads.slice(0, 30)));
-      window.dispatchEvent(new Event("academy_leads_updated"));
-
-      setSuccess(true);
-
-      // تشغيل عملية التحميل التلقائي للملف المختار
-      setTimeout(() => {
-        const link = document.createElement("a");
-        link.href = currentDownloadUrl;
-        link.target = "_blank";
-        link.download = `دليل_${specialization.replace(/\s+/g, "_")}_2026.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, 500);
-
-    } catch (err: any) {
+      alert("تم تسجيل بياناتك بنجاح وجاري تحضير ملف الـ PDF! 🎉");
+      
+      // هنا يمكنك وضع رابط تحميل الـ PDF المباشر الخاص بك
+      window.open("/path-to-your-pdf.pdf", "_blank");
+      
+      setName("");
+      setPhone("");
+      onClose();
+    } catch (err) {
       console.error("Supabase Insertion Error:", err);
-      setError("حدث خطأ ما أثناء حفظ البيانات بالخادم، برجاء المحاولة مجدداً.");
+      alert("حدث خطأ أثناء حفظ البيانات، برجاء المحاولة مرة أخرى.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 overflow-y-auto font-sans" dir="rtl">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto relative animate-scale-up text-right">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
+      <div className="relative w-full max-w-md overflow-hidden bg-[#0A2463] border border-white/10 rounded-2xl shadow-2xl p-6 text-white animate-fade-in">
         
-        {/* Header Decor */}
-        <div className="bg-gradient-to-r from-teal-850 to-emerald-900 bg-[#115e59] text-white p-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 shrink-0 text-amber-300 animate-pulse" />
-            <span className="font-sans font-black text-xs sm:text-sm tracking-wide text-white">نموذج تحميل الملف التعريفي والدليل PDF 📑</span>
+        {/* زر الإغلاق */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 left-4 text-slate-400 hover:text-white text-xl font-bold transition-colors cursor-pointer"
+        >
+          ✕
+        </button>
+
+        <div className="text-center space-y-2 mb-6">
+          <h3 className="text-lg sm:text-xl font-black text-amber-400">
+            📥 تحميل الدليل الرسمي المعتمد لعام 2026
+          </h3>
+          <p className="text-xs text-slate-300 font-medium">
+            برجاء إدخال بياناتك لتأكيد الهوية وتنزيل نسخة الـ PDF فوراً
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-200 mb-1">إسم الطالب ثلاثي أو رباعي:</label>
+            <input 
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="مثال: محمد أحمد مصطفى"
+              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400 font-medium text-right"
+              required
+            />
           </div>
-          <button 
-            type="button" 
-            onClick={onClose}
-            className="text-white hover:text-amber-100 p-1 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer transition"
+
+          <div>
+            <label className="block text-xs font-bold text-slate-200 mb-1">رقم الهاتف (واتساب):</label>
+            <input 
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="مثال: 01xxxxxxxxx"
+              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400 font-medium text-left"
+              dir="ltr"
+              required
+            />
+          </div>
+
+          <div className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs text-slate-300 font-medium">
+            📂 المستند المطلوب: <span className="text-amber-300 font-bold">{defaultSpecialization}</span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-slate-600 disabled:to-slate-700 text-white font-black py-3.5 rounded-xl text-sm shadow-xl transition-all duration-200 text-center cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            {loading ? "جاري التحقق والتحميل..." : "⚡ تأكيد البيانات وتحميل الكتيب الآن"}
           </button>
+        </form>
+
+        <div className="mt-4 pt-4 border-t border-white/5 text-[10px] text-center text-slate-400 font-medium">
+          🔒 بياناتك مشفرة ومحمية بالكامل وفقاً لسياسة الخصوصية للمنصة.
         </div>
-
-        <div className="p-6 space-y-4">
-          {!success ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="p-3.5 bg-teal-500/5 border border-teal-500/20 rounded-xl text-xs text-slate-700 font-bold leading-relaxed text-center">
-                📢 يرجى ملء البيانات لفتح رابط التحميل المباشر للدليل التفصيلي والكتيب للعام الجديد فوراً.
-              </div>
-
-              {/* Name field */}
-              <div className="space-y-1">
-                <label className="block text-xs font-black text-slate-650">الاسم بالكامل (ثلاثي أو رباعي):</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="اكتب اسمك الثلاثي أو الرباعي..."
-                    className="w-full pl-3 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-[#115e59] focus:outline-none transition leading-normal"
-                  />
-                  <User className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              {/* Phone field */}
-              <div className="space-y-1">
-                <label className="block text-xs font-black text-slate-650">رقم الهاتف للتواصل ومطابقة الرقم (واتس اب):</label>
-                <div className="relative font-mono">
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="مثال: 010XXXXXXXX"
-                    className="w-full pl-3 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-[#115e59] focus:outline-none transition leading-normal text-right"
-                  />
-                  <Phone className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              {/* Specialization Selection field */}
-              <div className="space-y-1">
-                <label className="block text-xs font-black text-slate-650">الملف أو الدليل المراد تحميله:</label>
-                <select
-                  value={specialization}
-                  onChange={(e) => setSpecialization(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-bold focus:ring-2 focus:ring-teal-500/20 focus:border-[#115e59] focus:outline-none transition"
-                >
-                  {pdfLibraryList.map((file) => (
-                    <option key={file.id} value={file.specialization}>
-                      📙 {file.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {error && (
-                <div className="p-3 bg-rose-50 border border-rose-250 rounded-lg text-rose-700 text-[11px] font-bold flex items-center gap-1.5 leading-relaxed">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {/* Submit / Download Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-lg transition active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
-                style={{ minHeight: "44px" }}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4.5 h-4.5 animate-spin" />
-                    <span>جاري تسجيل الطلب وتجهيز ملف التحميل...</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 text-emerald-100 animate-bounce" />
-                    <span>حفظ البيانات والتحميل الفوري للملف PDF 💾</span>
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            <div className="text-center space-y-4 animate-scale-up py-4">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="w-6 h-6 text-emerald-600 animate-bounce" />
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-extrabold text-sm text-slate-900">تم تفعيل كود التحميل وبدأ التنزيل تلقائياً! 🎉</h4>
-                <p className="text-[11px] text-slate-500 font-bold leading-normal">
-                  نشكرك على اهتمامك بـ ({specialization}). تم تسجيل بياناتك وحفظ طلبك في المنظومة المركزية لمتابعتك.
-                </p>
-              </div>
-
-              <hr className="border-slate-100 my-2" />
-
-              <a
-                href={currentDownloadUrl}
-                download={`دليل_${specialization.replace(/\s+/g, "_")}_2026.pdf`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl transition cursor-pointer flex items-center justify-center gap-2 shadow-md animate-pulse"
-                style={{ minHeight: "44px" }}
-              >
-                <Download className="w-4 h-4 shrink-0" />
-                <span>تحميل بديل يدوي مباشر للدليل (إذا لم يبدأ تلقائياً) ⬇️</span>
-              </a>
-
-              <p className="text-[9.5px] text-slate-400">إذا لم يبدأ التحميل تلقائياً خلال ثوانٍ، اضغط على الزر أعلاه للتحميل الفوري.</p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer lock state */}
-        <div className="bg-slate-50 px-6 py-4 border-
+      </div>
+    </div>
+  );
+}
