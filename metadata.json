@@ -1,0 +1,8 @@
+{
+  "name": "Remix:  ( من اميل aa13579151997@gmail.com ) بوابة المعاهد والأكاديميات الخاصة",
+  "description": "المنصة التفاعلية المعتمدة للأكاديميات والمعاهد الخاصة لتصفح التخصصات، توجيه الطلاب، توثيق الشهادات المهنية، وحجز مقاعد القبول والتأجيل بنزاهة",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
