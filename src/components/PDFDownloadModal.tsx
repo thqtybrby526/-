@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { X, FileText, User, Phone, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
 import { ACADEMY_DEPARTMENTS } from "../data";
+// 1. استيراد عميل Supabase الخاص بك (عدل المسار حسب مكان الملف عندك في المشروع)
+import { supabase } from "../supabaseClient"; 
 
 interface PDFDownloadModalProps {
   isOpen: boolean;
@@ -45,12 +47,10 @@ export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDF
     };
   }, []);
 
-  // Sync choice if defaults change
   useEffect(() => {
     if (defaultSpecialization) {
       setSpecialization(defaultSpecialization);
     } else if (pdfLibraryList.length > 0) {
-      // Find matching default specialization or fallback to first file
       const foundMatch = pdfLibraryList.some(f => f.specialization === defaultSpecialization);
       if (!foundMatch && pdfLibraryList[0]) {
         setSpecialization(pdfLibraryList[0].specialization);
@@ -60,7 +60,6 @@ export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDF
 
   if (!isOpen) return null;
 
-  // Resolve target download link dynamically
   const activeFileItem = pdfLibraryList.find(f => f.specialization === specialization) || pdfLibraryList[0];
   const currentDownloadUrl = activeFileItem ? activeFileItem.url : "https://raw.githubusercontent.com/alroubymediabuyer/academy-files/main/official-booklet-2026.pdf";
 
@@ -93,22 +92,23 @@ export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDF
 
     setLoading(true);
     try {
-      // Send download lead request to the server
-      const response = await fetch("/api/pdf-leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: nameTrim,
-          phone: phone.trim(),
-          specialization: specialization
-        })
-      });
+      // 2. تعديل الاتصال وحفظ البيانات مباشرة في Supabase بدلاً من الـ fetch القديم
+      const { data, error: supabaseError } = await supabase
+        .from("pdf_leads") // تأكد أن لديك جدول بهذا الاسم في Supabase يحتوي على الأعمدة (name, phone, specialization)
+        .insert([
+          {
+            name: nameTrim,
+            phone: phone.trim(),
+            specialization: specialization,
+            created_at: new Date().toISOString()
+          }
+        ]);
 
-      if (!response.ok) {
-        throw new Error("Failed to register lead");
+      if (supabaseError) {
+        throw supabaseError;
       }
 
-      // Live registration synchronizer event dispatch for ticker and general layout
+      // إبقاء المنظومة المحلية والـ Ticker تعملان بنجاح بدون مشاكل
       const directLeads = JSON.parse(localStorage.getItem("academy_direct_leads") || "[]");
       directLeads.unshift({
         studentName: nameTrim,
@@ -120,7 +120,7 @@ export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDF
 
       setSuccess(true);
 
-      // Trigger automatic file download
+      // تشغيل عملية التحميل التلقائي للملف المختار
       setTimeout(() => {
         const link = document.createElement("a");
         link.href = currentDownloadUrl;
@@ -131,9 +131,9 @@ export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDF
         document.body.removeChild(link);
       }, 500);
 
-    } catch (err) {
-      console.error(err);
-      setError("حدث خطأ ما بالاتصال في الشبكة، برجاء المحاولة مجدداً.");
+    } catch (err: any) {
+      console.error("Supabase Insertion Error:", err);
+      setError("حدث خطأ ما أثناء حفظ البيانات بالخادم، برجاء المحاولة مجدداً.");
     } finally {
       setLoading(false);
     }
@@ -272,13 +272,4 @@ export function PDFDownloadModal({ isOpen, onClose, defaultSpecialization }: PDF
         </div>
 
         {/* Footer lock state */}
-        <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-sans">
-          <span>حماية وسرية تامة ومصداقية كاملة</span>
-          <span className="font-semibold text-emerald-600 flex items-center gap-0.5">
-            <CheckCircle className="w-3.5 h-3.5 inline text-emerald-600" /> اتصال مشفر وآمن
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
+        <div className="bg-slate-50 px-6 py-4 border-
