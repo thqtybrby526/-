@@ -288,7 +288,7 @@ export default function Navbar() {
           {/* الشعار والاسم متجاوب ورشيق للغاية */}
           <div className="flex items-center gap-2 shrink-0 text-right">
             <img 
-              src="/src/assets/images/logo_academic_white_1781734502554.jpg" 
+              src="/logo.png" 
               className="h-10 w-10 sm:h-12 sm:w-12 bg-white p-0.5 rounded-full border border-slate-200 object-cover shadow-sm" 
               alt="بوابة المعاهد والأكاديميات الخاصة" 
               referrerPolicy="no-referrer"
