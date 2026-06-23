@@ -1,8 +1,0 @@
-{
-  "name": "Remix: Remix: بوابة المعاهد والأكاديميات الخاصة",
-  "description": "المنصة التفاعلية المعتمدة للأكاديميات والمعاهد الخاصة لتصفح التخصصات، توجيه الطلاب، توثيق الشهادات المهنية، وحجز مقاعد القبول والتأجيل بنزاهة",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
