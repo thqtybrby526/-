@@ -281,7 +281,7 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
     // Require quadripartite name (at least 3 spaces / 4 words)
     const words = studentName.trim().split(/\s+/).filter(Boolean);
     if (words.length < 4) {
-      setError("الرجاء إدخال الاسم الرباعي بالكامل لضمان تماشي البيانات مع الملفات والمستندات الرسمية لوزارة الاتصالات.");
+      setError("الرجاء إدخال الاسم الرباعي بالكامل لضمان تماشي البيانات مع الملفات والمستندات الرسمية .");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -342,10 +342,19 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
         }),
       });
 
-      const data = await response.json();
+// الحماية من الخطأ الأعمى: التحقق من نوع الاستجابة قبل التحويل
+      let data: any = {};
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const textError = await response.text();
+        throw new Error(`السيرفر واجه مشكلة ورجع استجابة نصية (كود: ${response.status}). تفاصيل: ${textError.substring(0, 120)}`);
+      }
+
       if (!response.ok) {
         if (data.supabaseError) {
-          throw new Error(`${data.error} (تفاصيل الخطأ: ${data.supabaseError.message || ""} - الرمز: ${data.supabaseError.code || ""})`);
+          throw new Error(`${data.error} (تفاصيل: ${data.supabaseError.message || ""} - الرمز: ${data.supabaseError.code || ""})`);
         }
         throw new Error(data.error || "عذراً، فشل تسجيل الطلب.");
       }
@@ -395,7 +404,7 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
           برجاء الاحتفاظ بكود الحجز لسرعة مراجعة ملفك في أقرب فرع للأكاديمية وتوفير الأوراق الرسمية المحددة بالدليل لتثبيت القبول النهائي.
           
           مع أطيب الأمنيات بالتفوق والنجاح الباهر،
-          إدارة الاستشارات والقبول - الأكاديمية والمجموعة الرسمية للدراسات المهنية
+          إدارة الاستشارات والقبول - (المعاهد والأكاديميات الخاصة) للدراسات المهنية التدريبية
         `
       };
 
@@ -471,7 +480,7 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
       setWantsEquivalence(false);
       setIsConfirming(false);
 
-      toast.success("✓ تم حجز مقعدك بنجاح وحفظ الخصم الدراسي المتاح لدفعة 2124!");
+      toast.success("✓ تم حجز مقعدك بنجاح للعام الدراسي 2026!");
 
       // Programmatic router navigation redirect
       navigate("/thank-you", { state: { reservation: data.reservation } });
@@ -947,7 +956,7 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
                   id="compliance-checkbox-input"
                 />
                 <span className="text-xs font-extrabold leading-relaxed text-slate-900">
-                  ☑️ أقر بصفتي الممثل المفوض للمؤسسة بالاطلاع والموافقة الكاملة على شروط وأحكام بوابة القبول والتوظيف المباشر، ونعلم أن المنصة هي بوابة تأهلية وإدارية خاصة للشراكات المهنية.
+                  ☑️ أقر بصفتي المتقدم بالطلب بصحة كافة البيانات المدونة أعلاه والموافقة الكاملة علي شروط واحكام بوابة القبول ؛ وأعلم ان هذا الحجز مبدئي لحين مراجعة الملف وتأكيده بعد التواصل معي لشرح كافة التفاصيل 🤝🏻 .
                 </span>
               </label>
             </div>
