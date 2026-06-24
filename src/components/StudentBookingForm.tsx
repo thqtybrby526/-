@@ -536,7 +536,7 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
 
                 {/* Warning alert */}
                 <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-200/40 text-xs text-slate-700 leading-relaxed font-semibold">
-                  ⚠️ يرجى كتابة البيانات مطابقة تماماً للمستندات الشخصية والرمز القومي لتجنب إلغاء الحجز من الهيئة الرسمية لوزارة الاتصالات.
+                  ⚠️ "برجاء مراجعة البيانات وتطابقها مع الهوية الشخصية وشهادة التخرج بدقة، حيث يتم فحص الملفات من قِبل إدارة القبول والتسجيل لتأكيد الترشيح النهائي لدفعة 2026.".
                 </div>
 
                 {/* Verification Table */}
@@ -747,7 +747,7 @@ export function StudentBookingForm({ preselectedDepts }: StudentBookingFormProps
                     <div className="text-right">
                       <p className="font-extrabold text-amber-955">⚠️ تنبيه: مطلوب الاسم رباعي بالكامل!</p>
                       <p className="mt-0.5 text-[11px] text-amber-800 leading-normal">
-                        لقد قمت بكتابة اسم {currentNameWords.length === 1 ? "منفرد" : currentNameWords.length === 2 ? "ثنائي" : "ثلاثي"} فقط ({currentNameWords.length} من أصل 4 كلمات). لضمان قبول ملفك مع وزارة الاتصالات، يجب كتابة اسمك رباعياً كاملاً.
+                        لقد قمت بكتابة اسم {currentNameWords.length === 1 ? "منفرد" : currentNameWords.length === 2 ? "ثنائي" : "ثلاثي"} فقط ({currentNameWords.length} من أصل 4 كلمات). لضمان قبول ملفك معنا، يجب كتابة اسمك رباعياً كاملاً.
                       </p>
                     </div>
                   </div>
