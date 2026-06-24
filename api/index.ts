@@ -652,9 +652,13 @@ app.post("/api/pdf-settings", (req, res) => {
 const LIBRARY_PATH = path.join(process.cwd(), "pdf-library.json");
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
-// Ensure UPLOADS_DIR exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// حماية السيرفر من الانهيار لضمان تشغيل التسجيل فوراً
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.log("Vercel Environment: Local uploads directory creation skipped safely.");
 }
 
 // Serve /uploads folder statically
