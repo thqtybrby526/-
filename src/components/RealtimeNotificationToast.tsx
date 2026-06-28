@@ -111,34 +111,8 @@ export function RealtimeNotificationToast() {
 
   useEffect(() => {
     // 1. Set up active real-time SSE listener directly from our Express/Vite backend
+// 1. Set up active real-time SSE listener directly from our Express/Vite backend
     const connectSSE = () => {};
-    connectSSE();
-
-      sse.addEventListener("message", (e) => {
-        if (e.data === ": keepalive") return;
-        try {
-          const parsed = JSON.parse(e.data);
-          if (parsed.type === "registration" && parsed.data) {
-            console.log("[SSE Client] Received registration event:", parsed.data);
-            triggerNotification({
-              name: parsed.data.name,
-              governorate: parsed.data.governorate,
-              specialization: parsed.data.specialization,
-              source: parsed.data.source
-            });
-          }
-        } catch (err) {
-          console.error("[SSE Client] Error parsing event message:", err);
-        }
-      });
-
-      sse.onerror = (err) => {
-        console.warn("[SSE Client] Event source encountered an error. Attempting auto-reconnect...", err);
-        sse.close();
-        // Exponential backoff reconnect
-        setTimeout(connectSSE, 10000);
-      };
-    };
 
     connectSSE();
 
