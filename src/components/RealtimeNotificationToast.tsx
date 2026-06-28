@@ -112,6 +112,7 @@ export function RealtimeNotificationToast() {
   useEffect(() => {
     // 1. Set up active real-time SSE listener directly from our Express/Vite backend
     const connectSSE = () => {
+      return; //
       console.log("[SSE Client] Connecting to real-time events endpoint...");
       const sse = new EventSource("/api/realtime-events");
       sseRef.current = sse;
