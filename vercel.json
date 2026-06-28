@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api|supabase|sheets|script|_next/static|_next/image|favicon.ico).*)",
-      "destination": "/index.html"
+      "source": "/api/leads",
+      "destination": "https://[YOUR_SUPABASE_PROJECT_ID].supabase.co/rest/v1/leads"
+    },
+    {
+      "source": "/api/roi-departments",
+      "destination": "/roi-departments.json"
     }
   ]
 }
