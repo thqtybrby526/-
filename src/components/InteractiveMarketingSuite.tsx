@@ -712,12 +712,15 @@ export function ROIProfessionalCalculator() {
   const [selectedMajorId, setSelectedMajorId] = useState<string>("");
   const [customTuition, setCustomTuition] = useState(13000); // Average custom tuition
 
-  useEffect(() => {
+useEffect(() => {
     const loadMajors = async () => {
       try {
-        const res = await fetch("/api/roi-departments");
+        // محاولة القراءة من الملف المحلي أولاً لحل مشكلة الـ 404 واللغة الفضائية
+        const res = await fetch("/roi-departments.json");
         const data = await res.json();
-        if (data.success && Array.isArray(data.departments)) {
+        
+        // لو الملف المحلي عبارة عن Object جواه success و departments
+        if (data && data.success && Array.isArray(data.departments)) {
           setDepartmentsList(data.departments);
           if (data.departments.length > 0) {
             setSelectedMajorId(prev => {
@@ -728,11 +731,25 @@ export function ROIProfessionalCalculator() {
             });
           }
           return;
+        } 
+        // لو الملف المحلي عبارة عن Array مباشر
+        else if (Array.isArray(data)) {
+          setDepartmentsList(data);
+          if (data.length > 0) {
+            setSelectedMajorId(prev => {
+              if (!prev || !data.some((d: any) => d.id === prev)) {
+                return data[0].id;
+              }
+              return prev;
+            });
+          }
+          return;
         }
       } catch (e) {
-        console.warn("Failed REST API lookup. Reverting to localStorage mirror...", e);
+        console.warn("Failed local fetch. Reverting to localStorage mirror...", e);
       }
 
+      // خط الدفاع الأخير: لو فشل الـ fetch يروح للـ localStorage
       const saved = localStorage.getItem("custom_roi_calculator_constants_v2");
       if (saved) {
         try {
@@ -757,6 +774,7 @@ export function ROIProfessionalCalculator() {
     };
 
     loadMajors();
+  }, []); // القوس المفتوح اتقفل هنا تماماً وبأمان
 
     // Event listener for real-time synchronization when updated via the CRUD panel
     window.addEventListener("roi_constants_updated", loadMajors);
