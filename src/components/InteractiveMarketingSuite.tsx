@@ -948,11 +948,16 @@ export function CorporateHiringGate() {
     e.preventDefault();
     setIsSubmitCheck(true);
 
-    try {
-      // Send to central express leads pipeline with flag
-      await fetch("/api/leads", {
+try {
+      // Send directly to Supabase table
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/leads`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
         body: JSON.stringify({
           studentName: `[بوابة شركات] ${formData.companyName}`,
           phoneNumber: formData.phone,
@@ -963,7 +968,7 @@ export function CorporateHiringGate() {
           notes: formData.notes
         })
       });
-
+  
       // Also append to local list of business partners
       const savedPartners = JSON.parse(localStorage.getItem("academy_business_leads") || "[]");
       savedPartners.push({
