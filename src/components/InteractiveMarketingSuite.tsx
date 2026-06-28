@@ -1792,9 +1792,14 @@ export function ParentsVIPAssurance() {
     setLocalError(null);
     setLoading(true);
     try {
-      await fetch("/api/leads", {
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/leads`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
         body: JSON.stringify({
           studentName: `[طلب ولي أمر] ${parentName.trim()}`,
           phoneNumber: parentPhone.trim(),
