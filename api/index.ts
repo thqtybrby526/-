@@ -243,6 +243,14 @@ export const supabase = createClient(supabaseUrl, supabaseKey || "dummy-key-to-p
 
 export const app = express();
 
+// Middleware to preserve original URL paths in serverless/Vercel environments
+app.use((req, res, next) => {
+  if (req.originalUrl && req.url !== req.originalUrl) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
+
 // Enable JSON bodies parsing with 50MB limit for base64 file uploads
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
