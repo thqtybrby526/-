@@ -102,7 +102,7 @@ export default function Footer() {
         <div className="space-y-4">
           <div className="flex items-center gap-3.5 justify-start">
             <img 
-              src="/src/assets/images/logo_academic_white_1781734502554.jpg" 
+              src="/src/assets/images/logo.png" 
               className="h-12 w-12 object-cover rounded-full bg-white border border-slate-800 shadow-md shrink-0" 
               alt="بوابة المعاهد والأكاديميات" 
               referrerPolicy="no-referrer"
