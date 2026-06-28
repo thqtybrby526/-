@@ -111,8 +111,8 @@ export function RealtimeNotificationToast() {
 
   useEffect(() => {
     // 1. Set up active real-time SSE listener directly from our Express/Vite backend
-    const connectSSE = () => {
-      };
+    const connectSSE = () => {};
+    connectSSE();
 
       sse.addEventListener("message", (e) => {
         if (e.data === ": keepalive") return;
