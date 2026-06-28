@@ -10,5 +10,12 @@ export const hasSupabase = !!(supabaseKey && supabaseKey.trim().length > 0);
 // لكن طالما مضاف في فيرسيل هيقرأ الحقيقي فوراً.
 export const supabase = createClient(
   supabaseUrl.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, ""), 
-  supabaseKey || "dummy-key-to-prevent-crash"
+  supabaseKey || "dummy-key-to-prevent-crash",
+  {
+    realtime: {
+      params: {
+        eventsPerSecond: 0
+      }
+    }
+  }
 );
